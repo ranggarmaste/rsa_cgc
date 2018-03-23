@@ -24,6 +24,10 @@ public class RSA {
     private static BigInteger ONE = new BigInteger("1");
     private static BigInteger TWO = new BigInteger("2");
 
+    private static LongLongInteger ZERO_L = new LongLongInteger("0");
+    private static LongLongInteger ONE_L = new LongLongInteger("1");
+    private static LongLongInteger TWO_L = new LongLongInteger("2");
+
     public void createKey(String filename, long p, long q) {
         long n = p * q;
         long phi = (p - 1) * (q - 1);
@@ -99,6 +103,22 @@ public class RSA {
                 encrypted.append(padFront(ans.toString(2), splitBits[0].length()+1));
             }
             writeBits(output, encrypted.toString());
+        } else if (type.equals(RSA.LONGLONGINT_TYPE)) {
+            LongLongInteger n = new LongLongInteger(splits[0]);
+            LongLongInteger e = new LongLongInteger(splits[1]);
+            String[] splitBits = splitToBits(bits, n, true);
+            StringBuilder encrypted = new StringBuilder();
+
+            // Append last bit-block padding length
+            int paddingSize = (splitBits.length * splitBits[0].length()) %  bits.length();
+            encrypted.append(padFront(Integer.toBinaryString(paddingSize), 32));
+
+            for (int i = 0; i < splitBits.length; i++) {
+                LongLongInteger val = LongLongInteger.fromBits(splitBits[i]);
+                LongLongInteger ans = val.moduloExponent(e, n);
+                encrypted.append(padFront(ans.toBits(), splitBits[0].length()+1));
+            }
+            writeBits(output, encrypted.toString());
         }
     }
 
@@ -129,6 +149,23 @@ public class RSA {
             String cleaned = decrypted.toString().substring(0, cleanLength) + cleanedEnd;
             writeBits(output, cleaned);
         } else if (type.equals(RSA.BIGINTEGER_TYPE)) {
+            LongLongInteger n = new LongLongInteger(splits[0]);
+            LongLongInteger d = new LongLongInteger(splits[1]);
+            String[] splitBits = splitToBits(bits, n, false);
+            StringBuilder decrypted = new StringBuilder();
+
+            for (int i = 0; i < splitBits.length; i++) {
+                LongLongInteger val = LongLongInteger.fromBits(splitBits[i]);
+                LongLongInteger ans = val.moduloExponent(d, n);
+                decrypted.append(padFront(ans.toBits(),splitBits[0].length()-1));
+            }
+
+            // Clean form padding
+            int cleanLength = decrypted.toString().length() - splitBits[0].length();
+            String cleanedEnd = decrypted.toString().substring(cleanLength).substring(paddingSize);
+            String cleaned = decrypted.toString().substring(0, cleanLength) + cleanedEnd;
+            writeBits(output, cleaned);
+        } else if (type.equals(RSA.LONGLONGINT_TYPE)) {
             BigInteger n = new BigInteger(splits[0]);
             BigInteger d = new BigInteger(splits[1]);
             String[] splitBits = splitToBits(bits, n, false);
@@ -195,6 +232,27 @@ public class RSA {
         while (start.compareTo(ONE) == 1) {
             count += 1;
             start = start.divide(TWO);
+        }
+
+        ArrayList<String> splitBits = new ArrayList<>();
+        for (int i = 0; i < bits.length(); i += count) {
+            int limit = i + count > bits.length() ? bits.length() : i + count;
+            if ((limit - i == count) || isEncrypt) {
+                String splitBit = padFront(bits.substring(i, limit), count);
+                splitBits.add(splitBit);
+            }
+        }
+        return splitBits.toArray(new String[splitBits.size()]);
+    }
+
+    private String[] splitToBits(String bits, LongLongInteger n, boolean isEncrypt) {
+        int count = 0;
+        if (!isEncrypt) count = 1;
+
+        LongLongInteger start = n;
+        while (start.compareTo(ONE_L) == 1) {
+            count += 1;
+            start = start.divide(TWO_L);
         }
 
         ArrayList<String> splitBits = new ArrayList<>();
