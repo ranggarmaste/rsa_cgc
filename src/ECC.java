@@ -73,7 +73,7 @@ public class ECC {
             return new Point(xr, yr);
         } else if (type.equals(ECC.BIGINTEGER_TYPE)) {
             BigInteger dy = b.y_bl.subtract(a.y_bl);
-            BigInteger dx = b.x_bl.subtract(a.y_bl);
+            BigInteger dx = b.x_bl.subtract(a.x_bl);
             dy = dy.mod(p_bl);
             dx = dx.modInverse(p_bl);
             BigInteger grad = dy.multiply(dx).mod(p_bl);
@@ -82,7 +82,6 @@ public class ECC {
             BigInteger yr = a.x_bl.subtract(xr).multiply(grad).subtract(a.y_bl);
             xr = xr.mod(p_bl);
             yr = yr.mod(p_bl);
-//            System.out.println(xr.toString() + " " + yr.toString());
             return new Point(xr, yr);
         } else {
             LongLongInteger dy = b.y_ll.minus(a.y_ll);
@@ -123,14 +122,13 @@ public class ECC {
             BigInteger yr = a.x_bl.subtract(xr).multiply(grad).subtract(a.y_bl);
             xr = xr.mod(p_bl);
             yr = yr.mod(p_bl);
-//            System.out.println(xr.toString() + " " + yr.toString());
             return new Point(xr, yr);
         } else {
-            LongLongInteger dy = LongLongInteger.fromString("3").multiply(a.x_ll).plus(a_ll);
-            LongLongInteger dx = LongLongInteger.fromString("2").multiply(a.y_ll);
-            dy = dy.modulo(p_ll);
-            dx = dx.moduloInverse(p_ll);
-            LongLongInteger grad = dy.multiply(dx);
+            LongLongInteger num = LongLongInteger.fromString("3").multiply(a.x_ll).multiply(a.x_ll).plus(a_ll);
+            LongLongInteger den = LongLongInteger.fromString("2").multiply(a.y_ll);
+            num = num.modulo(p_ll);
+            den = den.moduloInverse(p_ll);
+            LongLongInteger grad = num.multiply(den).modulo(p_ll);
 
             LongLongInteger xr = grad.multiply(grad).minus(a.x_ll).minus(a.x_ll);
             LongLongInteger yr = a.x_ll.minus(xr).multiply(grad).minus(a.y_ll);

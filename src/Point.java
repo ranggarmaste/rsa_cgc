@@ -51,7 +51,7 @@ public class Point {
         } else if (type.equals(BIGINTEGER_TYPE)) {
             return ((p.x_bl.equals(x_bl)) && (p.y_bl.equals(y_bl)));
         } else {
-            return (((p.x_ll.compareTo(x_ll))==1) && ((p.y_ll.compareTo(y_ll))==1));
+            return (((p.x_ll.compareTo(x_ll))==0) && ((p.y_ll.compareTo(y_ll))==0));
         }
     }
 

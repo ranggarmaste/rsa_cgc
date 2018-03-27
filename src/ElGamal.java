@@ -55,14 +55,14 @@ public class ElGamal {
     }
 
     public void createKey(String filename, LongLongInteger sk) {
-        Point pk = new Point(base.x_bl, base.y_bl);
+        Point pk = new Point(base.x_ll, base.y_ll);
         LongLongInteger i = new LongLongInteger(sk.toString());
-        while (sk.compareTo(LongLongInteger.fromString("0")) > 0) {
-            pk = polynom.addPoint(pk, base, ECC.BIGINTEGER_TYPE);
+        while (i.compareTo(LongLongInteger.fromString("0")) > 0) {
+            pk = polynom.addPoint(pk, base, ECC.LONGLONGINT_TYPE);
             i = i.minus(LongLongInteger.fromString("1"));
         }
 
-        writePublicKey(filename + ".pub", pk.toString(ECC.BIGINTEGER_TYPE));
+        writePublicKey(filename + ".pub", pk.toString(ECC.LONGLONGINT_TYPE));
         writePrivateKey(filename + ".pri", sk.toString());
     }
 
@@ -81,20 +81,19 @@ public class ElGamal {
         int size = 32;
         byte[] fileBytes = Utils.readFile(input);
         String bits = Utils.bytesToBits(fileBytes);
-        while (bits.length() % 32 > 0) {
+        int pad = bits.length() % size;
+        encrypted.append(String.valueOf(pad) + " ");
+        while (bits.length() % size > 0) {
             bits += "0";
         }
         for (int i=0; i<(bits.length()/size); i++) {
             long mx = Long.parseLong(bits.substring((i*size), ((i*size) + 16)), 2);
             long my = Long.parseLong(bits.substring(((i*size) + 16), ((i*size) + 32)), 2);
-            System.out.println(mx + " " + my);
             Point pm = new Point(mx, my);
             Point[] cipher = encrypt(_pk, pm, k);
-            System.out.println(cipher[0].toString(ECC.LONG_TYPE) + " " + cipher[1].toString(ECC.LONG_TYPE));
             encrypted.append(Long.toString(cipher[0].x_l) + " " + Long.toString(cipher[0].y_l) + " " +
                     Long.toString(cipher[1].x_l) + " " + Long.toString(cipher[1].y_l) + " ");
         }
-        System.out.println(encrypted.toString());
         writeBits(output, encrypted.toString());
     }
 
@@ -115,20 +114,20 @@ public class ElGamal {
         int size = 32;
         byte[] fileBytes = Utils.readFile(input);
         String bits = Utils.bytesToBits(fileBytes);
-        while (bits.length() % 32 > 0) {
+        int pad = bits.length() % size;
+        encrypted.append(String.valueOf(pad) + " ");
+        while (bits.length() % size > 0) {
             bits += "0";
         }
         for (int i=0; i<(bits.length()/size); i++) {
             BigInteger mx = new BigInteger(bits.substring((i*size), ((i*size) + 16)), 2);
             BigInteger my = new BigInteger(bits.substring(((i*size) + 16), ((i*size) + 32)), 2);
-            System.out.println(mx + " " + my);
             Point pm = new Point(mx, my);
+//            System.out.println(mx.toString() + " " + my.toString());
             Point[] cipher = encrypt(_pk, pm, k);
-            System.out.println(cipher[0].toString(ECC.BIGINTEGER_TYPE) + " " + cipher[1].toString(ECC.BIGINTEGER_TYPE));
             encrypted.append(Long.toString(cipher[0].x_bl.longValue()) + " " + Long.toString(cipher[0].y_bl.longValue()) + " " +
                     Long.toString(cipher[1].x_bl.longValue()) + " " + Long.toString(cipher[1].y_bl.longValue()) + " ");
         }
-        System.out.println(encrypted.toString());
         writeBits(output, encrypted.toString());
     }
 
@@ -142,17 +141,22 @@ public class ElGamal {
         LongLongInteger j = new LongLongInteger(k.toString());
         while (j.compareTo(LongLongInteger.fromString("0")) > 0) {
             _pk = polynom.addPoint(_pk, pk, ECC.LONGLONGINT_TYPE);
-            j = j.minus(LongLongInteger.fromString("0"));
+            j = j.minus(LongLongInteger.fromString("1"));
         }
 
         // Pm
         int size = 32;
         byte[] fileBytes = Utils.readFile(input);
         String bits = Utils.bytesToBits(fileBytes);
-        for (int i=0; i<=(bits.length()/size); i++) {
+        int pad = bits.length() % size;
+        encrypted.append(String.valueOf(pad) + " ");
+        while (bits.length() % size > 0) {
+            bits += "0";
+        }
+        for (int i=0; i<(bits.length()/size); i++) {
             LongLongInteger mx = LongLongInteger.fromBits(bits.substring((i*size), ((i*size) + 16)));
             LongLongInteger my = LongLongInteger.fromBits(bits.substring(((i*size) + 16), ((i*size) + 32)));
-            System.out.println(mx + " " + my);
+//            System.out.println(mx.toString() + " " + my.toString());
             Point pm = new Point(mx, my);
             Point[] cipher = encrypt(_pk, pm, k);
             encrypted.append((cipher[0].x_ll.toString()) + " " + (cipher[0].y_ll.toString()) + " " +
@@ -167,8 +171,6 @@ public class ElGamal {
         for (long i=0; i<k; i++) {
             kb = polynom.addPoint(kb, base, ECC.LONG_TYPE);
         }
-        System.out.println(base.toString(ECC.LONG_TYPE));
-        System.out.println(polynom.addPoint(new Point(611, 50434), base, ECC.LONG_TYPE).toString(ECC.LONG_TYPE));
 
         // Pm + kPb
         Point pr;
@@ -185,8 +187,6 @@ public class ElGamal {
             kb = polynom.addPoint(kb, base, ECC.BIGINTEGER_TYPE);
             i = i.subtract(BigInteger.ONE);
         }
-        System.out.println(base.toString(ECC.BIGINTEGER_TYPE));
-        System.out.println(polynom.addPoint(new Point(BigInteger.valueOf(611), BigInteger.valueOf(50434)), base, ECC.BIGINTEGER_TYPE).toString(ECC.BIGINTEGER_TYPE));
 
         // Pm + kPb
         Point pr;
@@ -213,6 +213,8 @@ public class ElGamal {
 
     public void decryptFile(String input, String output, String privateKeyFile, String type) {
         String[] fileNums = readFile(input);
+        int pad = Integer.parseInt(fileNums[0]);
+        fileNums = Arrays.copyOfRange(fileNums, 1, fileNums.length);
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(output));
 
@@ -225,10 +227,8 @@ public class ElGamal {
 
                     Point kb = new Point(x1,y1);
                     Point pr = new Point(x2,y2);
-                    System.out.println(pr.toString(ECC.LONG_TYPE) + " " + kb.toString(ECC.LONG_TYPE));
                     long sk = Long.valueOf(readPrivateKey(privateKeyFile)[0]);
                     Point pm = decrypt(kb, pr, sk);
-                    System.out.println(pm.x_l + " " + pm.y_l);
                     String mx = Long.toBinaryString(pm.x_l);
                     String my = Long.toBinaryString(pm.y_l);
                     while (mx.length() < 16) {
@@ -238,8 +238,25 @@ public class ElGamal {
                         my = "0" + my;
                     }
 
-                    writer.write(Utils.bitsToString(mx));
-                    writer.write(Utils.bitsToString(my));
+                    if (i==((fileNums.length/4)-1)) {
+                        while ((pad > 0) && (my.length() > 0)) {
+                            my = my.substring(0, (my.length()-1));
+                            pad -= 1;
+                        }
+                        if (pad > 0) {
+                            while (pad > 0) {
+                                mx = mx.substring(0, (mx.length()-1));
+                                pad -= 1;
+                            }
+                            writer.write(Utils.bitsToString(mx));
+                        } else {
+                            writer.write(Utils.bitsToString(mx));
+                            writer.write(Utils.bitsToString(my));
+                        }
+                    } else {
+                        writer.write(Utils.bitsToString(mx));
+                        writer.write(Utils.bitsToString(my));
+                    }
                 }
             } else if (type.equals(ECC.BIGINTEGER_TYPE)) {
                 for (int i=0; i<(fileNums.length/4); i++) {
@@ -250,10 +267,8 @@ public class ElGamal {
 
                     Point kb = new Point(x1,y1);
                     Point pr = new Point(x2,y2);
-                    System.out.println(pr.toString(ECC.BIGINTEGER_TYPE) + " " + kb.toString(ECC.BIGINTEGER_TYPE));
                     BigInteger sk = new BigInteger(readPrivateKey(privateKeyFile)[0]);
                     Point pm = decrypt(kb, pr, sk);
-                    System.out.println(pm.x_bl.toString() + " " + pm.y_bl.toString());
                     String mx = pm.x_bl.toString(2);
                     String my = pm.y_bl.toString(2);
                     while (mx.length() < 16) {
@@ -263,8 +278,25 @@ public class ElGamal {
                         my = "0" + my;
                     }
 
-                    writer.write(Utils.bitsToString(mx));
-                    writer.write(Utils.bitsToString(my));
+                    if (i==((fileNums.length/4)-1)) {
+                        while ((pad > 0) && (my.length() > 0)) {
+                            my = my.substring(0, (my.length()-1));
+                            pad -= 1;
+                        }
+                        if (pad > 0) {
+                            while (pad > 0) {
+                                mx = mx.substring(0, (mx.length()-1));
+                                pad -= 1;
+                            }
+                            writer.write(Utils.bitsToString(mx));
+                        } else {
+                            writer.write(Utils.bitsToString(mx));
+                            writer.write(Utils.bitsToString(my));
+                        }
+                    } else {
+                        writer.write(Utils.bitsToString(mx));
+                        writer.write(Utils.bitsToString(my));
+                    }
                 }
             } else {
                 for (int i=0; i<(fileNums.length/4); i++) {
@@ -277,7 +309,6 @@ public class ElGamal {
                     Point pr = new Point(x2,y2);
                     LongLongInteger sk = LongLongInteger.fromString(readPrivateKey(privateKeyFile)[0]);
                     Point pm = decrypt(kb, pr, sk);
-                    System.out.println(pm.x_ll.toString() + " " + pm.y_ll.toString());
                     String mx = pm.x_ll.toBits();
                     String my = pm.y_ll.toBits();
                     while (mx.length() < 16) {
@@ -287,8 +318,25 @@ public class ElGamal {
                         my = "0" + my;
                     }
 
-                    writer.write(Utils.bitsToString(mx));
-                    writer.write(Utils.bitsToString(my));
+                    if (i==((fileNums.length/4)-1)) {
+                        while ((pad > 0) && (my.length() > 0)) {
+                            my = my.substring(0, (my.length()-1));
+                            pad -= 1;
+                        }
+                        if (pad > 0) {
+                            while (pad > 0) {
+                                mx = mx.substring(0, (mx.length()-1));
+                                pad -= 1;
+                            }
+                            writer.write(Utils.bitsToString(mx));
+                        } else {
+                            writer.write(Utils.bitsToString(mx));
+                            writer.write(Utils.bitsToString(my));
+                        }
+                    } else {
+                        writer.write(Utils.bitsToString(mx));
+                        writer.write(Utils.bitsToString(my));
+                    }
                 }
             }
             writer.close();
@@ -299,25 +347,21 @@ public class ElGamal {
 
     private Point decrypt(Point kb, Point pr, long sk) {
         Point _kb = new Point(kb.x_l, kb.y_l);
-//        System.out.println(pr.toString(ECC.LONG_TYPE) + " " + _kb.toString(ECC.LONG_TYPE));
         for (long i=0; i<sk; i++) {
             _kb = polynom.addPoint(_kb, kb, ECC.LONG_TYPE);
         }
         _kb.setY(_kb.y_l * -1);
-//        System.out.println(pr.toString(ECC.LONG_TYPE) + " " + _kb.toString(ECC.LONG_TYPE));
         return polynom.addPoint(pr, _kb, ECC.LONG_TYPE);
     }
 
     private Point decrypt(Point kb, Point pr, BigInteger sk) {
         Point _kb = new Point(kb.x_bl, kb.y_bl);
-//        System.out.println(pr.toString(ECC.BIGINTEGER_TYPE) + " " + _kb.toString(ECC.BIGINTEGER_TYPE));
         BigInteger i = BigInteger.valueOf(sk.longValue());
         while (i.compareTo(BigInteger.ZERO) > 0) {
             _kb = polynom.addPoint(_kb, kb, ECC.BIGINTEGER_TYPE);
             i = i.subtract(BigInteger.ONE);
         }
         _kb.setY(_kb.y_bl.negate());
-//        System.out.println(pr.toString(ECC.BIGINTEGER_TYPE) + " " + _kb.toString(ECC.BIGINTEGER_TYPE));
         return polynom.addPoint(pr, _kb, ECC.BIGINTEGER_TYPE);
     }
 

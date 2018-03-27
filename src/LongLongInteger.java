@@ -28,13 +28,13 @@ public class LongLongInteger {
     public LongLongInteger minus(LongLongInteger l) {
         String s1 = value;
         String s2 = l.value;
-        return fromString(new BigInteger(s1).add(new BigInteger(s2)).toString());
+        return fromString(new BigInteger(s1).subtract(new BigInteger(s2)).toString());
     }
 
     public LongLongInteger plus(LongLongInteger l) {
         String s1 = value;
         String s2 = l.value;
-        return fromString(new BigInteger(s1).subtract(new BigInteger(s2)).toString());
+        return fromString(new BigInteger(s1).add(new BigInteger(s2)).toString());
     }
 
     public LongLongInteger negate() {
@@ -69,7 +69,7 @@ public class LongLongInteger {
     public LongLongInteger modulo(LongLongInteger l) {
         String s1 = value;
         String s2 = l.value;
-        return fromString(new BigInteger(s1).add(new BigInteger(s2)).toString());
+        return fromString(new BigInteger(s1).mod(new BigInteger(s2)).toString());
     }
 
     public LongLongInteger moduloExponent(LongLongInteger exponent, LongLongInteger mod) {

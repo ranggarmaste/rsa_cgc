@@ -13,6 +13,7 @@ public class Main {
 
         long prime1 = Long.valueOf("65537");
         BigInteger prime = BigInteger.valueOf(prime1);
+        LongLongInteger prime2 = LongLongInteger.fromString("65537");
         System.out.println(BigInteger.valueOf(Long.valueOf("-462215806")).mod(prime));
 
         ElGamal eg1 = new ElGamal(3, 3, prime1, 7, 3);
@@ -31,12 +32,12 @@ public class Main {
         System.out.println("\nde");
         eg.decryptFile("test.txt", "out.txt","eg.pri", RSA.BIGINTEGER_TYPE);
 
-        System.out.println("\n\n\n");
-        Point a = new Point(611, 50434);
-        Point a1 = new Point(7, 3);
-        Point b = new Point(BigInteger.valueOf(611), BigInteger.valueOf(50434));
-        Point b1 = new Point(BigInteger.valueOf(7), BigInteger.valueOf(3));
-        System.out.println(eg1.getPolynom().addPoint(a, a1, ECC.LONG_TYPE).toString(ECC.LONG_TYPE));
-        System.out.println(eg.getPolynom().addPoint(b, b1, ECC.BIGINTEGER_TYPE).toString(ECC.BIGINTEGER_TYPE));
+        ElGamal eg2 = new ElGamal(LongLongInteger.fromString("3"), LongLongInteger.fromString("3"), prime2, LongLongInteger.fromString("7"), LongLongInteger.fromString("3"));
+        System.out.println("\n===============\nHOLA");
+        eg2.createKey("eg2", LongLongInteger.fromString("11"));
+        System.out.println("\nen");
+        eg2.encryptFile("hello.txt", "test.txt", "eg2.pub", LongLongInteger.fromString("5"));
+        System.out.println("\nde");
+        eg2.decryptFile("test.txt", "out.txt","eg2.pri", RSA.LONGLONGINT_TYPE);
     }
 }
