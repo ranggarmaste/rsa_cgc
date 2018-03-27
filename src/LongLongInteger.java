@@ -37,11 +37,11 @@ public class LongLongInteger {
         return fromString(new BigInteger(s1).subtract(new BigInteger(s2)).toString());
     }
 
-    public LongLongInteger negate(LongLongInteger l) {
-        if (l.value.charAt(0) == '-') {
-            return fromString(l.value.substring(1));
+    public LongLongInteger negate() {
+        if (value.charAt(0) == '-') {
+            return fromString(value.substring(1));
         }
-        return fromString("-" + l.value);
+        return fromString("-" + value);
     }
 
     public LongLongInteger multiply(LongLongInteger l) {
