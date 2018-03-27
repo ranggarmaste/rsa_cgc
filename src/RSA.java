@@ -66,6 +66,26 @@ public class RSA {
         writePrivateKey(filename + ".pri", n.toString(), d.toString());
     }
 
+    public void createKey(String filename, LongLongInteger p, LongLongInteger q) {
+        LongLongInteger n = p.multiply(q);
+        LongLongInteger phi = (p.minus(ONE_L)).multiply(q.minus(ONE_L));
+        LongLongInteger e = TWO_L;
+
+        while (e.compareTo(phi) == -1) {
+            if (gcd(e, phi).equals(ONE_L)) break;
+            e = e.plus(ONE_L);
+        }
+
+        LongLongInteger k = ONE_L;
+        while (!(ONE_L.plus(k.multiply(phi))).modulo(e).equals(ZERO_L)) {
+            k = k.plus(ONE_L);
+        };
+        LongLongInteger d = (ONE_L.plus(k.multiply(phi))).divide(e);
+
+        writePublicKey(filename + ".pub", n.toString(), e.toString());
+        writePrivateKey(filename + ".pri", n.toString(), d.toString());
+    }
+
     public void encrypt(String input, String output, String publicKeyFile, String type) {
         byte[] fileBytes = Utils.readFile(input);
         String bits = Utils.bytesToBits(fileBytes);
@@ -314,5 +334,10 @@ public class RSA {
     private BigInteger gcd(BigInteger x, BigInteger y) {
         if (y.equals(ZERO)) return x;
         return gcd(y, x.mod(y));
+    }
+
+    private LongLongInteger gcd(LongLongInteger x, LongLongInteger y) {
+        if (y.equals(ZERO_L)) return x;
+        return gcd(y, x.modulo(y));
     }
 }

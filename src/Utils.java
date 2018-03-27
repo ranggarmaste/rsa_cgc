@@ -1,6 +1,7 @@
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 /**
  * Utils
@@ -46,6 +47,19 @@ public class Utils {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static String toHexString(byte[] bytes) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < bytes.length; i++) {
+            String a = Integer.toHexString(bytes[i] & 0xFF);
+            if (a.length() < 2) {
+                a = "0" + a;
+            }
+            builder.append(a);
+            builder.append(" ");
+        }
+        return builder.toString();
     }
 
     public static String padFront(String bit, int count) {
