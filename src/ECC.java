@@ -68,6 +68,8 @@ public class ECC {
 
             long xr = grad*grad - a.x_l - b.x_l;
             long yr = grad * (a.x_l - xr) - a.y_l;
+            xr = BigInteger.valueOf(xr).mod(BigInteger.valueOf(p_l)).longValue();
+            yr = BigInteger.valueOf(yr).mod(BigInteger.valueOf(p_l)).longValue();
             return new Point(xr, yr);
         } else if (type.equals(ECC.BIGINTEGER_TYPE)) {
             BigInteger dy = b.y_bl.subtract(a.y_bl);
@@ -78,6 +80,8 @@ public class ECC {
 
             BigInteger xr = grad.multiply(grad).subtract(a.x_bl).subtract(b.x_bl);
             BigInteger yr = a.x_bl.subtract(xr).multiply(grad).subtract(a.y_bl);
+            xr = xr.mod(p_bl);
+            yr = yr.mod(p_bl);
             return new Point(xr, yr);
         } else {
             LongLongInteger dy = b.y_ll.minus(a.y_ll);
@@ -102,6 +106,8 @@ public class ECC {
 
             long xr = grad*grad - 2 * a.x_l;
             long yr = grad * (a.x_l - xr) - a.y_l;
+            xr = BigInteger.valueOf(xr).mod(BigInteger.valueOf(p_l)).longValue();
+            yr = BigInteger.valueOf(yr).mod(BigInteger.valueOf(p_l)).longValue();
             return new Point(xr, yr);
         } else if (type.equals(ECC.BIGINTEGER_TYPE)) {
             BigInteger num = BigInteger.valueOf(3).multiply(a.x_bl).multiply(a.x_bl).add(a_bl);
@@ -112,6 +118,8 @@ public class ECC {
 
             BigInteger xr = grad.multiply(grad).subtract(a.x_bl).subtract(a.x_bl);
             BigInteger yr = a.x_bl.subtract(xr).multiply(grad).subtract(a.y_bl);
+            xr = xr.mod(p_bl);
+            yr = yr.mod(p_bl);
             return new Point(xr, yr);
         } else {
             LongLongInteger dy = LongLongInteger.fromString("3").multiply(a.x_ll).plus(a_ll);

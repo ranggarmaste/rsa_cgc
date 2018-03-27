@@ -63,4 +63,18 @@ public class Utils {
         }
         return newBit;
     }
+
+    public static String bitsToString(String bit) {
+        String res = "";
+        while (bit.length() % 8 > 0) {
+            bit = "0" + bit;
+        }
+
+        for (int i=0; i<(bit.length()/8); i++) {
+            String b = bit.substring((i*8), ((i+1)*8));
+            res += new Character((char)Integer.parseInt(b,2)).toString();
+        }
+        System.out.println(res);
+        return res;
+    }
 }

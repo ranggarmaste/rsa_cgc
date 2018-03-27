@@ -37,6 +37,14 @@ public class Point {
         y_ll = y;
     }
 
+    public void setX(long x) {x_l = x;}
+    public void setX(BigInteger x) {x_bl = x;}
+    public void setX(LongLongInteger x) {x_ll = x;}
+    public void setY(long y) {y_l = y;}
+    public void setY(BigInteger y) {y_bl = y;}
+    public void setY(LongLongInteger y) {y_ll = y;}
+
+
     public boolean compareTo(Point p, String type) {
         if (type.equals(LONG_TYPE)) {
             return ((p.x_l==x_l) && (p.y_l==y_l));
